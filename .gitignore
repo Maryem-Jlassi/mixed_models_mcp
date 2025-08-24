@@ -1,0 +1,9 @@
+node_modules/
+build/
+.env
+claude_host.py
+clode.py
+host.py
+main_clode.py
+united.py
+/backend/venv/
