@@ -18,7 +18,7 @@ A full-stack application for CV analysis, job matching, and intelligent job sear
 
 ## Key Features
 
-- **CV Analysis**: Upload and analyze CVs in various formats
+- **CV Analysis**: Upload and analyze CVs in various Structures
 - **Job Extraction**: Extract job postings from URLs
 - **Smart Matching**: Intelligent CV-job matching
 - **Multi-Model Support**: Switch between Ollama and Groq LLM backends
@@ -56,7 +56,7 @@ DATABASE_NAME=jobmatcher
 # Optional overrides
 # LOG_LEVEL=INFO
 # GROQ_MODEL=llama-3.1-8b-instant
-# OLLAMA_MODEL=llama3
+# OLLAMA_MODEL=llama3.2:latest
 # PORT=8001
 ```
 
