@@ -1,53 +1,125 @@
-# CV Analyzer (FastAPI + React)
+# MCP Agent for Job Offer Extraction and CV Matching
 
-Full‑stack app to analyze CVs, search job postings, and compare CVs with jobs.
-
+A full-stack application for CV analysis, job matching, and intelligent job search using LLMs.
 
 ## Overview
 
-- Backend (`backend/`): FastAPI API. Main app: `backend/main.py`. Orchestrator: `backend/orchestrator.py` with `UnifiedLLMHost`.
-  - Uses Groq LLM (requires `GROQ_API_KEY`).
-  - Starts MCP clients on demand:
-    - CV OCR: `backend/cv_ocr_server.py`
-    - Job Search: `backend/job_mcp_server.py`
-  - Stores uploads in `backend/uploads/` and chats in `backend/conversations/` (JSON).
-- Frontend (`frontend/`): React app (react-scripts). Main page: `src/pages/ChatPage.jsx` (renders `components/Main/Main.jsx` + `Sidebar`).
-  - Dev server on port 3001. Proxy to API `http://localhost:8000`.
+- **Backend** (`backend/`): FastAPI-based REST API with multiple LLM backends
+  - Supports both Ollama and Groq LLM backends
+  - Handles CV processing, job extraction, and matching workflows
+  - MongoDB for session and chat history storage
+  - Main entry point: `backend/app.py`
 
+- **Frontend** (`frontend/`): Modern React application
+  - Built with Create React App
+  - Responsive UI with chat interface
+  - Real-time streaming responses
+  - Main components in `src/components/` and pages in `src/pages/`
 
-## Key Workflows
+## Key Features
 
-- CV analysis: upload PDF/DOCX/TXT → extract text → analysis & suggestions.
-- Job search: give company name(s) or job URL(s) → fetch → convert to markdown → extract jobs.
-- Comparison: use processed CV + company/URL to generate matches.
-
-All coordinated by `UnifiedLLMHost.process_unified_request()` and streamed back as NDJSON.
-
+- **CV Analysis**: Upload and analyze CVs in various formats
+- **Job Extraction**: Extract job postings from URLs
+- **Smart Matching**: Intelligent CV-job matching
+- **Multi-Model Support**: Switch between Ollama and Groq LLM backends
+- **Session Management**: Save and resume conversations
+- **Streaming Responses**: Real-time interaction with LLMs
 
 ## Prerequisites
 
-- Windows, macOS, or Linux
 - Python 3.10+
 - Node.js 18+
-- Groq API key
+- MongoDB
+- Ollama (for local LLM) or Groq API key (for cloud LLM)
 
+## Backend Setup
 
-## Backend – Setup & Run
+1. Create a virtual environment and install dependencies:
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# OR
+.\venv\Scripts\activate  # Windows
 
-1) Create `backend/.env` (supported via `pydantic-settings` in `config.py`):
+pip install -r backend/requirements.txt
 ```
+
+2. Configure environment variables in `backend/.env`:
+```
+# Required for Groq
 GROQ_API_KEY=your_groq_api_key
+
+# MongoDB settings
+MONGODB_URL=mongodb://localhost:27017
+DATABASE_NAME=jobmatcher
+
 # Optional overrides
 # LOG_LEVEL=INFO
-# GROQ_MODEL_NAME=llama3-70b-8192
-# PORT=8000
+# GROQ_MODEL=llama-3.1-8b-instant
+# OLLAMA_MODEL=llama3
+# PORT=8001
 ```
 
-2) Install deps (example minimal set):
+3. Start the backend server:
+```bash
+uvicorn backend.app:app --reload --port 8001
 ```
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install fastapi "uvicorn[standard]" httpx pydantic pydantic-settings python-multipart psutil
+
+## Frontend Setup
+
+1. Install dependencies:
+```bash
+cd frontend
+npm install
+```
+
+2. Start the development server:
+```bash
+npm start
+```
+
+The frontend will be available at `http://localhost:3000`
+
+## API Endpoints
+
+- `GET /` - API root with available endpoints
+- `POST /workflow` - Main workflow endpoint (defaults to Ollama)
+- `POST /groq/workflow` - Groq LLM workflow endpoint
+- `GET /simple/health` - Health check for Ollama backend
+- `GET /groq/health` - Health check for Groq backend
+- `GET /api/sessions` - List chat sessions
+- `GET /api/chat/{session_id}` - Get chat history for a session
+
+## Workflow Parameters
+
+- `message`: User query/instruction
+- `job_url`: URL to extract job postings from
+- `cv_file`: Uploaded CV file (PDF/DOCX/TXT)
+- `model`: LLM to use ('simple' for Ollama, 'groq' for Groq)
+- `session_id`: Optional session ID for chat history
+
+## Environment Variables
+
+### Backend
+- `GROQ_API_KEY`: API key for Groq service
+- `MONGODB_URL`: MongoDB connection string
+- `DATABASE_NAME`: MongoDB database name
+- `LOG_LEVEL`: Logging level (default: INFO)
+- `PORT`: Port to run the server on (default: 8001)
+
+## Architecture
+
+The application follows a modular architecture:
+
+- `app.py`: Main FastAPI application and endpoints
+- `groq.py`: Groq LLM integration and workflow logic
+- `simple.py`: Ollama LLM integration
+- `auth.py`: Authentication and user management
+- `db.py`: Database connection and utilities
+- `cv_client.py`: CV processing client
+- `job_client.py`: Job extraction client
+
+Frontend components are organized by feature in the `src/components/` directory, with page layouts in `src/pages/`.
 ```
 
 3) Start API:
